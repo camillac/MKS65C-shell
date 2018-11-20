@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <string.h>
 
 // pulled from parseargs repo
 
@@ -22,4 +23,8 @@ void exec(char * line){
 		execvp(array[0], array);
 	}
 	free(array);
+}
+
+int main(){
+	return 0;
 }
