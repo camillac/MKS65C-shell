@@ -16,9 +16,14 @@ char ** parse_args(char * line){
 
   printf("%ld\n", strlen(line));
   char *s1 = strncpy(s1, s, strlen(line) - 1);
+  while (*s1){
+    printf("[%d,%c] ", *s1, *s1);
+    s1++;
+  }
+
   //printf("S1 = '%s'\n", s1);
   int x = 0;
-  
+
   while ((array[x++] = strsep( &s1, " ")) && s1){
     //for (int n = 0; n < 5; n++){
     //  printf("%x = '%s'\n", n, array[n]);
@@ -54,10 +59,10 @@ int main(){
   char * line;
   fgets(line, 100, stdin);
   //printf("LINE: '%s'\n", line);
-  
+
   char ** args = parse_args( line );
   execvp(args[0], args);
-  
+
   printf("%s\n", strerror(errno));
   free(args);
   return 0;
