@@ -6,16 +6,27 @@
 #include <string.h>
 #include <errno.h>
 
+// get trim*
+
+
 char ** parse_args(char * line){
   char ** array = calloc(5, sizeof(char*));
   char s[100];
   sprintf(s, "%s", line);
-  char *s1 = s;
+
+  printf("%ld\n", strlen(line));
+  char *s1 = strncpy(s1, s, strlen(line) - 1);
+  //printf("S1 = '%s'\n", s1);
   int x = 0;
-  while (s1){
-    array[x] = strsep( &s1, " ");
-    printf("%s", array[x]);
-    x++;
+  
+  while ((array[x++] = strsep( &s1, " ")) && s1){
+    //for (int n = 0; n < 5; n++){
+    //  printf("%x = '%s'\n", n, array[n]);
+    //}
+    //printf("'%s'\n", s1);
+    if (strcmp(s1,"") == 0){
+      break;
+    }
   }
 
   return array;
@@ -40,12 +51,13 @@ int main(){
   //   return 0;
   // }
   // return 0;
-
-  char * line = "ls ";
-  // fgets(line, sizeof(char) *100, stdin);
-  // printf("LINE: '%s'\n", line);
+  char * line;
+  fgets(line, 100, stdin);
+  //printf("LINE: '%s'\n", line);
+  
   char ** args = parse_args( line );
   execvp(args[0], args);
+  
   printf("%s\n", strerror(errno));
   free(args);
   return 0;
