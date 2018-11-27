@@ -5,65 +5,88 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <grp.h>
+#include <pwd.h>
 
-// get trim*
-
-
+// separates each argument in a string and returns all the arguments as a string array
 char ** parse_args(char * line){
-  char ** array = calloc(5, sizeof(char*));
-  char s[100];
-  sprintf(s, "%s", line);
+  char ** array = calloc(100, sizeof(char*));
 
-  printf("%ld\n", strlen(line));
-  char *s1 = strncpy(s1, s, strlen(line) - 1);
-  while (*s1){
-    printf("[%d,%c] ", *s1, *s1);
-    s1++;
-  }
-
-  //printf("S1 = '%s'\n", s1);
   int x = 0;
 
-  while ((array[x++] = strsep( &s1, " ")) && s1){
-    //for (int n = 0; n < 5; n++){
-    //  printf("%x = '%s'\n", n, array[n]);
-    //}
-    //printf("'%s'\n", s1);
-    if (strcmp(s1,"") == 0){
-      break;
+  char * token;
+  while (line && x < 100){
+    token = strsep(&line, " ");
+    if (strcmp(token,"")) {
+      array[x] = token;
+      x++;
     }
   }
+
 
   return array;
 }
 
+char * userid(long stuid){
+  	return getpwuid(stuid)->pw_name;
+}
+
 int main(){
-  // char * s;
-  // fgets( s, 256, stdin);
-  // int cpid;
-  // char ** args;
-  // pid_t f1 = fork();
-  // if (f1 > 0 && s != NULL){
-  //   printf("PARENT\n");
-  //   cpid = wait(NULL);
-  // }
-  // else {
-  //   printf("CHILD\n");
-  //   args = parse_args(s);
-  //   printf("args: %s\n", args[0]);
-  //   execvp(args[0], args);
-  //   printf("NYEH\n");
-  //   return 0;
-  // }
-  // return 0;
-  char * line;
-  fgets(line, 100, stdin);
-  //printf("LINE: '%s'\n", line);
+  pid_t parent = getpid();
 
-  char ** args = parse_args( line );
-  execvp(args[0], args);
+  char * dirname = ".";
+  DIR * d = opendir(dirname);
+  if (!d) {
+    printf("Error: %s\n", strerror(errno) );
+    return errno;
+  }
 
-  printf("%s\n", strerror(errno));
+	struct dirent * info = readdir(d);
+
+	struct stat * s = malloc(sizeof(struct stat));
+	stat(dirname, s);
+
+  while(getpid() == parent) {
+    printf("%s$ ", userid(s->st_uid));
+
+    char * line = calloc(100, sizeof(char));
+    fgets(line, 100, stdin);
+    char * p = strchr(line, '\n');
+    if (p) *p = 0;
+    //printf("LINE: '%s'\n", line);
+
+    char ** args = parse_args( line );
+
+    int status;
+    // printf("'%s'\n", args[0] );
+    // printf("%d\n", strcmp(args[0], "exit"));
+    if (!strcmp(args[0], "exit")){
+      printf("logout\n");
+
+      //kill(getppid(), SIGKILL);
+      return 0;
+    }
+    if (!strcmp(args[0], "cd"));
+
+    pid_t f1 = fork();
+
+
+    // if child of parent
+    if (f1 == 0) {
+      execvp(args[0], args);
+      return 0;
+    }
+    // if parent
+    else {
+      // wait until a child process is done
+      int cpid = wait(&status);
+      int slept = WEXITSTATUS(status);
+    }
+
   free(args);
+  }
   return 0;
 }
