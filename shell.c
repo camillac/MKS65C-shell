@@ -65,10 +65,10 @@ int main(){
     // printf("%d\n", strcmp(args[0], "exit"));
     if (!strcmp(args[0], "exit")){
       printf("logout\n");
-
       //kill(getppid(), SIGKILL);
-      return 0;
+      exit(0);
     }
+
     if (!strcmp(args[0], "cd"));
 
     pid_t f1 = fork();
