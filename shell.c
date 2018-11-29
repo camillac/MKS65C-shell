@@ -12,44 +12,39 @@
 #include <pwd.h>
 
 // separates each argument in a string and returns all the arguments as a string array
-char ** parse_args(char * line){
+char ** parse_args(char * line, char * c){
   char ** array = calloc(100, sizeof(char*));
 
   int x = 0;
 
   char * token;
   while (line && x < 100){
-    token = strsep(&line, " ");
+    token = strsep(&line, c);
     if (strcmp(token,"")) {
       array[x] = token;
       x++;
     }
   }
 
-
   return array;
 }
 
+
+// returns the userid
 char * userid(long stuid){
   	return getpwuid(stuid)->pw_name;
 }
+
+int cd(char * dirname);
 
 int main(){
   pid_t parent = getpid();
 
   char * dirname = ".";
-  DIR * d = opendir(dirname);
-  if (!d) {
-    printf("Error: %s\n", strerror(errno) );
-    return errno;
-  }
-
-	struct dirent * info = readdir(d);
-
 	struct stat * s = malloc(sizeof(struct stat));
 	stat(dirname, s);
 
-  while(getpid() == parent) {
+  while(1) {
     printf("%s$ ", userid(s->st_uid));
 
     char * line = calloc(100, sizeof(char));
@@ -58,35 +53,46 @@ int main(){
     if (p) *p = 0;
     //printf("LINE: '%s'\n", line);
 
-    char ** args = parse_args( line );
+    int index = 0;
+    char ** argsep = parse_args(line, ";");
+    while(argsep[index]) {
 
-    int status;
-    // printf("'%s'\n", args[0] );
-    // printf("%d\n", strcmp(args[0], "exit"));
-    if (!strcmp(args[0], "exit")){
-      printf("logout\n");
-      //kill(getppid(), SIGKILL);
-      exit(0);
+      char ** args = parse_args( argsep[index], " ");
+
+      int status;
+
+
+      // exit
+      if (!strcmp(args[0], "exit")){
+        printf("logout\n");
+        exit(0);
+      }
+
+      // cd
+      if (!strcmp(args[0], "cd")){
+        int n = chdir(args[1]);
+        if (n == -1){
+          printf("Error: %s\n", strerror(errno) );
+        }
+      }
+
+      pid_t f1 = fork();
+      //while (f1 == 0 && strchr())
+      // if child of parent
+      if (f1 == 0) {
+        execvp(args[0], args);
+        return 0;
+      }
+      // if parent
+      else {
+        // wait until a child process is done
+        int cpid = wait(&status);
+        int slept = WEXITSTATUS(status);
+      }
+
+      free(args);
+      index++;
     }
-
-    if (!strcmp(args[0], "cd"));
-
-    pid_t f1 = fork();
-
-
-    // if child of parent
-    if (f1 == 0) {
-      execvp(args[0], args);
-      return 0;
-    }
-    // if parent
-    else {
-      // wait until a child process is done
-      int cpid = wait(&status);
-      int slept = WEXITSTATUS(status);
-    }
-
-  free(args);
   }
   return 0;
 }
