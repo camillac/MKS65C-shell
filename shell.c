@@ -35,7 +35,15 @@ char * userid(long stuid){
   	return getpwuid(stuid)->pw_name;
 }
 
-int cd(char * dirname);
+int redir(char * r, char * file){
+  if (strcmp(r, ">"));
+  if (strcmp(r, ">>"));
+  if (strcmp(r, "2>"));
+  if (strcmp(r, "&>"));
+  if (strcmp(r, "<"));
+  else
+    return -1;
+}
 
 int main(){
   pid_t parent = getpid();
@@ -74,6 +82,10 @@ int main(){
         if (n == -1){
           printf("Error: %s\n", strerror(errno) );
         }
+      }
+
+      if (strcmp(args[1], ">") == 0){
+
       }
 
       pid_t f1 = fork();
