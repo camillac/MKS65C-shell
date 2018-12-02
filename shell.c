@@ -81,13 +81,14 @@ int redir(char * r, char * file){
 void cd_exit(char ** args){
   int n;
   if (!strcmp(args[0], "cd")){
-    n = chdir(args[1]);
     if (args[1] == NULL || strchr(args[1], '~') != NULL){
       char * arg = args[1]+1;
       char * home = getenv("HOME");
       home = strcat(home, arg);
-      printf("%s\n", home);
       n = chdir(home);
+    }
+    else {
+      n = chdir(args[1]);
     }
     if (n == -1){
       printf("-bash: cd: %s: %s\n", args[1], strerror(errno) );
