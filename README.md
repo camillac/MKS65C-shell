@@ -32,10 +32,18 @@
    - what it does:
       - gets userid from struct stat and returns it
       
-* cd_exit
+* **cd_exit**
    - arguments:
       - char ** args : array of arguments in the line
    - return value:
       - void
    - what it does:
       - handles the cd or exit command
+* **run**
+   - arguments:
+      - n/a
+   - return value:
+      - int - returns 0 for successful, -1 for error
+   - what it does:
+      - runs the whole process
+      
