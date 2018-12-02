@@ -4,15 +4,14 @@
 
 ### Failed Features:
 ### Functions:
-1. parse_args
+* parse_args
    - arguments:
      - char * line : line of input from the terminal
 
-  * char * c    : the character the line is being separated by
+     - char * c    : the character the line is being separated by
 
- return value:
- 
-  * char ** - returns string array of each argument in the line
+   - return value:
+     - char ** - returns string array of each argument in the line
    
  what it does:
  
