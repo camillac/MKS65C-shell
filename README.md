@@ -1,12 +1,18 @@
 # MKS65C-shell
 ## Camilla's Shell!
 ### Features:
------
+---
+* prompt contains username + path in color
+* runs basic bash commands
+* cd + exit
 
-### Failed Features:
------
+### Failed/In Progress Features:
+---
+* redirection
+* pipes
+
 ### Functions:
------
+---
 * parse_args
    - arguments:
       - char * line : line of input from the terminal
