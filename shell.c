@@ -36,6 +36,7 @@ char ** parse_args(char * line, char * c){
   return array;
 }
 
+
 int num_args(char ** array){
   int counter = 0;
   while (array[counter]){
@@ -71,6 +72,15 @@ int redir(char * r, char * file){
     return -1;
 }
 
+// replace_one
+//  arguments:
+//    char * line : string that contains character you want to change
+//    char what   : the character you want to change
+//    char * with : the string you want to replace the character with
+//  return value:
+//    char * - returns the new string
+//  what it does:
+//    replaces a character in a string with a string
 char* replace_one(char* line, char what, char* with) {
     char* out = calloc(sizeof(char), 1000);
     char* part_two = strchr(line, what);
@@ -80,7 +90,39 @@ char* replace_one(char* line, char what, char* with) {
     strcat(out, with);
     strcat(out, part_two);
     printf("%s\n", out);
-    return out;
+
+    int index = 0;
+    while (out[index++]);
+    char* outout = calloc(sizeof(char), index);
+    strcpy(outout, out);
+
+    free(out);
+
+    return outout;
+}
+
+// trim
+//  arguments:
+//    char * to_trim : the string you want to trim
+//  return value:
+//    char * - returns the new string
+//  what it does:
+//    trims empty spaces off the edges of a string
+char* trim(char* to_trim) {
+  char* start = to_trim;
+  while (*start == ' ') {
+    start++;
+  }
+  char* end = to_trim;
+  while (*end) {
+    end++;
+  }
+  end--;
+  while (*end == ' ') {
+    *end = 0;
+    end--;
+  }
+  return start;
 }
 
 // cd_exit
@@ -111,6 +153,79 @@ void cd_exit(char ** args){
   }
 }
 
+int reg(char * line){
+  char ** args = parse_args( line, " ");
+  int status;
+
+  // if cd or exit
+  cd_exit(args);
+
+  pid_t f1 = fork();
+
+  // if child
+  if (f1 == 0) {
+    execvp(args[0], args);
+    return 0;
+  }
+  // if parent
+  // wait until a child process is done
+  int cpid = wait(&status);
+
+
+  free(args);
+  return 0;
+}
+
+int redir_sin(char * line){
+  int x = 1;
+  char ** sep = parse_args(line, "<");
+  int sin = dup(STDIN_FILENO);
+  int fd;
+  while (sep[x]){
+    fd = open(trim(sep[x]), O_CREAT | O_RDONLY);
+    int s = dup2(fd, STDIN_FILENO);
+    close(fd);
+    x++;
+  }
+  return sin;
+}
+
+int redir_sout(char * line){
+  int x = 1;
+  char ** sep = parse_args(line, ">");
+  int sout = dup(STDOUT_FILENO);
+  int fd = STDOUT_FILENO;
+  int newfd;
+  while (sep[x]){
+    // printf("HELLLLLLLLLLO");
+    newfd = open(trim(sep[x]), O_CREAT | O_WRONLY);
+    int s = dup2(newfd, fd);
+    close(newfd);
+    x++;
+  }
+  printf("%s\n", sep[0]);
+  reg(sep[0]);
+  dup2(sout, newfd);
+  return sout;
+}
+
+int semi_colon(char * line){
+  char ** argsep = parse_args(line, ";");
+  int index = 0;
+  while(argsep[index]) {
+      if (strchr(line, '>'))
+        redir_sout(line);
+      // else if (strchr(line, '<'))
+      //   redir_sin(line);
+      // else if (strchr(line, '|'))
+      //   pip(line);
+      else
+        reg(line);
+      index++;
+  }
+  return 0;
+}
+
 // run
 //  arguments:
 //    n/a
@@ -131,49 +246,17 @@ int run(){
     char * p = strchr(line, '\n');
     if (p) *p = 0;
 
-    int index = 0;
-    char ** argsep = parse_args(line, ";");
+    if (strchr(line, ';'))
+      semi_colon(line);
+    else if (strchr(line, '>'))
+      redir_sout(line);
+    // else if (strchr(line, '<'))
+    //   redir_sin(line);
+    // else if (strchr(line, '|'))
+    //   pip(line);
+    else
+      reg(line);
 
-    while(argsep[index]) {
-
-      int x = 1;
-      char ** sep = parse_args(argsep[index], " > ");
-      int sout = dup(STDOUT_FILENO);
-      int fd;
-      while (sep[x]){
-        // printf("HELLLLLLLLLLO");
-        fd = open(sep[x], O_CREAT | O_WRONLY);
-        int s = dup2(fd, STDOUT_FILENO);
-        close(fd);
-        x++;
-      }
-      //printf("HELLLLLLLLLLO");
-
-
-      char ** args = parse_args( sep[0], " ");
-
-      int status;
-
-      // if cd or exit
-      cd_exit(args);
-
-      pid_t f1 = fork();
-
-      // if child
-      if (f1 == 0) {
-        execvp(args[0], args);
-        return 0;
-      }
-      // if parent
-      else {
-        // wait until a child process is done
-        int n = dup2(sout, fd);
-        int cpid = wait(&status);
-      }
-
-      free(args);
-      index++;
-    }
     free(line);
   }
   return 0;
