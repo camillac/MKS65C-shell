@@ -71,6 +71,18 @@ int redir(char * r, char * file){
     return -1;
 }
 
+char* replace_one(char* line, char what, char* with) {
+    char* out = calloc(sizeof(char), 1000);
+    char* part_two = strchr(line, what);
+    *part_two = NULL;
+    part_two++;
+    strcat(out, line);
+    strcat(out, with);
+    strcat(out, part_two);
+    printf("%s\n", out);
+    return out;
+}
+
 // cd_exit
 //  arguments:
 //    char ** args : array of arguments in the line
@@ -81,14 +93,10 @@ int redir(char * r, char * file){
 void cd_exit(char ** args){
   int n;
   if (!strcmp(args[0], "cd")){
+    n = chdir(args[1]);
     if (args[1] == NULL || strchr(args[1], '~') != NULL){
-      char * arg = args[1]+1;
-      char * home = getenv("HOME");
-      home = strcat(home, arg);
+      char * home = replace_one(args[1], '~', getenv("HOME"));
       n = chdir(home);
-    }
-    else {
-      n = chdir(args[1]);
     }
     if (n == -1){
       printf("-bash: cd: %s: %s\n", args[1], strerror(errno) );
@@ -106,7 +114,7 @@ void cd_exit(char ** args){
 //  return value:
 //    int - returns 0 for successful, -1 for error
 //  what it does:
-//    handles the cd or exit process
+//    runs the whole process
 int run(){
   pid_t parent = getpid();
   char * uid = userid();
@@ -122,7 +130,11 @@ int run(){
 
     int index = 0;
     char ** argsep = parse_args(line, ";");
+
     while(argsep[index]) {
+
+      // int x = 0;
+      // char ** sep = parse_args(line, "|")
 
       char ** args = parse_args( argsep[index], " ");
 
