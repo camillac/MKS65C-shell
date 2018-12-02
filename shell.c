@@ -94,7 +94,10 @@ void cd_exit(char ** args){
   int n;
   if (!strcmp(args[0], "cd")){
     n = chdir(args[1]);
-    if (args[1] == NULL || strchr(args[1], '~') != NULL){
+    if (args[1] == NULL) {
+      n = chdir(getenv("HOME"));
+    }
+    else if (strchr(args[1], '~') != NULL){
       char * home = replace_one(args[1], '~', getenv("HOME"));
       n = chdir(home);
     }
