@@ -11,6 +11,8 @@
 * pipes
 
 ## Bugs and Stuff
+* "cd ~" doesn't work for "cd ~/(anything else)"
+
 
 ## Functions:
 * **parse_args**
