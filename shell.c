@@ -11,7 +11,14 @@
 #include <grp.h>
 #include <pwd.h>
 
-// separates each argument in a string and returns all the arguments as a string array
+// parse_args
+//  arguments:
+//    char * line : line of input from the terminal
+//    char * c    : the character the line is being separated by
+//  return value:
+//    char ** - returns string array of each argument in the line
+//  what it does:
+//    separates each argument in a string and returns all the arguments as a string array
 char ** parse_args(char * line, char * c){
   char ** array = calloc(100, sizeof(char*));
 
@@ -29,10 +36,29 @@ char ** parse_args(char * line, char * c){
   return array;
 }
 
+int num_args(char ** array){
+  int counter = 0;
+  while (array[counter]){
+    counter++;
+  }
+  return counter;
+}
 
-// returns the userid
-char * userid(long stuid){
-  	return getpwuid(stuid)->pw_name;
+
+// userid
+//  arguments:
+//    n/a
+//  return value:
+//    char * - returns the user id
+//  what it does:
+//    gets userid from struct stat and returns it
+char * userid(){
+  char * dirname = ".";
+  struct stat * s = malloc(sizeof(struct stat));
+  stat(dirname, s);
+  char * uid = getpwuid(s->st_uid)->pw_name;
+  free(s);
+  return uid;
 }
 
 int redir(char * r, char * file){
@@ -45,21 +71,53 @@ int redir(char * r, char * file){
     return -1;
 }
 
-int main(){
-  pid_t parent = getpid();
+// cd_exit
+//  arguments:
+//    char ** args : array of arguments in the line
+//  return value:
+//    void
+//  what it does:
+//    handles the cd or exit command
+void cd_exit(char ** args){
+  int n;
+  if (!strcmp(args[0], "cd")){
+    n = chdir(args[1]);
+    if (args[1] == NULL || strchr(args[1], '~') != NULL){
+      char * arg = args[1]+1;
+      char * home = getenv("HOME");
+      home = strcat(home, arg);
+      printf("%s\n", home);
+      n = chdir(home);
+    }
+    if (n == -1){
+      printf("-bash: cd: %s: %s\n", args[1], strerror(errno) );
+    }
+  }
+  if (!strcmp(args[0], "exit")){
+    printf("logout\n");
+    exit(0);
+  }
+}
 
-  char * dirname = ".";
-	struct stat * s = malloc(sizeof(struct stat));
-	stat(dirname, s);
+// run
+//  arguments:
+//    n/a
+//  return value:
+//    int - returns 0 for successful, -1 for error
+//  what it does:
+//    handles the cd or exit process
+int run(){
+  pid_t parent = getpid();
+  char * uid = userid();
+  // printf("\e[36mWELCOME TO CAMILLA'S TERMINAL <3\n");
 
   while(1) {
-    printf("%s$ ", userid(s->st_uid));
+    printf("\e[92m%s:\e[94m%s\e[92m$ ", uid, getcwd(NULL, 256));
 
     char * line = calloc(100, sizeof(char));
     fgets(line, 100, stdin);
     char * p = strchr(line, '\n');
     if (p) *p = 0;
-    //printf("LINE: '%s'\n", line);
 
     int index = 0;
     char ** argsep = parse_args(line, ";");
@@ -69,28 +127,12 @@ int main(){
 
       int status;
 
-
-      // exit
-      if (!strcmp(args[0], "exit")){
-        printf("logout\n");
-        exit(0);
-      }
-
-      // cd
-      if (!strcmp(args[0], "cd")){
-        int n = chdir(args[1]);
-        if (n == -1){
-          printf("Error: %s\n", strerror(errno) );
-        }
-      }
-
-      if (strcmp(args[1], ">") == 0){
-
-      }
+      // if cd or exit
+      cd_exit(args);
 
       pid_t f1 = fork();
-      //while (f1 == 0 && strchr())
-      // if child of parent
+
+      // if child
       if (f1 == 0) {
         execvp(args[0], args);
         return 0;
@@ -105,6 +147,11 @@ int main(){
       free(args);
       index++;
     }
+    free(line);
   }
   return 0;
+}
+
+int main(){
+  return run();
 }
