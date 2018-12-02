@@ -1,9 +1,12 @@
 # MKS65C-shell
 ## Camilla's Shell!
 ### Features:
+-----
 
 ### Failed Features:
+-----
 ### Functions:
+-----
 * parse_args
    - arguments:
       - char * line : line of input from the terminal
