@@ -74,7 +74,7 @@ int redir(char * r, char * file){
 char* replace_one(char* line, char what, char* with) {
     char* out = calloc(sizeof(char), 1000);
     char* part_two = strchr(line, what);
-    *part_two = NULL;
+    *part_two = 0;
     part_two++;
     strcat(out, line);
     strcat(out, with);
@@ -137,18 +137,17 @@ int run(){
     while(argsep[index]) {
 
       int x = 1;
-      char ** sep = parse_args(line, " > ");
+      char ** sep = parse_args(argsep[index], " > ");
       int sout = dup(STDOUT_FILENO);
       int fd;
       while (sep[x]){
-        printf("HELLLLLLLLLLO");
+        // printf("HELLLLLLLLLLO");
         fd = open(sep[x], O_CREAT | O_WRONLY);
         int s = dup2(fd, STDOUT_FILENO);
         close(fd);
         x++;
       }
-      int n = dup2(sout, fd);
-      printf("HELLLLLLLLLLO");
+      //printf("HELLLLLLLLLLO");
 
 
       char ** args = parse_args( sep[0], " ");
@@ -168,8 +167,8 @@ int run(){
       // if parent
       else {
         // wait until a child process is done
+        int n = dup2(sout, fd);
         int cpid = wait(&status);
-        int slept = WEXITSTATUS(status);
       }
 
       free(args);
