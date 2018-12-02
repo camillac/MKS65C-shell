@@ -9,7 +9,7 @@
 * pipes
 
 ## Functions:
-* parse_args
+* **parse_args**
    - arguments:
       - char * line : line of input from the terminal
       - char * c    : the character the line is being separated by
