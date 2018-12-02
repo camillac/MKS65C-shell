@@ -136,10 +136,22 @@ int run(){
 
     while(argsep[index]) {
 
-      // int x = 0;
-      // char ** sep = parse_args(line, "|")
+      int x = 1;
+      char ** sep = parse_args(line, " > ");
+      int sout = dup(STDOUT_FILENO);
+      int fd;
+      while (sep[x]){
+        printf("HELLLLLLLLLLO");
+        fd = open(sep[x], O_CREAT | O_WRONLY);
+        int s = dup2(fd, STDOUT_FILENO);
+        close(fd);
+        x++;
+      }
+      int n = dup2(sout, fd);
+      printf("HELLLLLLLLLLO");
 
-      char ** args = parse_args( argsep[index], " ");
+
+      char ** args = parse_args( sep[0], " ");
 
       int status;
 
