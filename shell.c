@@ -269,7 +269,7 @@ int semi_colon(char * line){
 }
 
 void print_prompt(char * uid){
-  printf("\e[92m%s:\e[94m%s\e[92m$ ", uid, getcwd(NULL, 256));
+  printf("\e[92m%s:\e[94m%s\e[37m$ ", uid, getcwd(NULL, 256));
 }
 
 // get_line
@@ -303,15 +303,15 @@ int main(){
 
     char * line = calloc(100, sizeof(char));
     get_line(line);
-
-    if (line[0] == '|' || line[0] == '>' || line[0] == '<' || line[0] == ';') {
-      printf("-bash: syntax error near unexpected token `%c'\n", line[0]);
+    if (strlen(line) > 0){
+      if (line[0] == '|' || line[0] == '>' || line[0] == '<' || line[0] == ';') {
+	printf("-bash: syntax error near unexpected token `%c'\n", line[0]);
+      }
+      else if (strchr(line, ';'))
+	semi_colon(line);
+      else
+	reg(line);
     }
-    else if (strchr(line, ';'))
-      semi_colon(line);
-    else
-      reg(line);
-
     free(line);
   }
   return 0;
