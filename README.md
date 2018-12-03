@@ -5,9 +5,9 @@
 * cd + exit
 * can "cd ~" or "cd" (<- no file path), will cd to home directory
 * semi-colon process separation
+* redirection using "<" and ">" (works with multiple symbols)
 
 ## Failed/In Progress Features:
-* redirection
 * pipes
 
 ## Bugs and Stuff
