@@ -217,6 +217,7 @@ int pipes(char * line){
 //  what it does:
 //    runs the individual processes
 int reg(char * line){
+
   char * copy = calloc(sizeof(char), 100);
   strcat(copy, line);
   char ** args = parse_args( copy, " ");
@@ -231,6 +232,11 @@ int reg(char * line){
   int newfd = -1;
   // if child
   if (f1 == 0) {
+    if (line[0] == '|' || line[0] == '>'|| line[0] == '<'  || line[0] == ';'){
+      int error = execvp((char*) line[1], args);
+      if (error == -1)
+        printf("%s: %s\n", args[0], strerror(errno));
+    }
     if (strchr(line, '|'))
       pipes(line);
     redir_sout(line);
