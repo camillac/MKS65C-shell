@@ -10,7 +10,7 @@
 * pipes (only 1 though)
 
 ## Failed/In Progress Features:
-* n/a, everything's working! (hopefully)
+* N/A, everything's working! (hopefully)
 
 ## Bugs and Stuff
 * can not use "<" and then ">" in the same line
