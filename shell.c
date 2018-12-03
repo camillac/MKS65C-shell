@@ -1,15 +1,4 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <grp.h>
-#include <pwd.h>
+#include "shell.h"
 
 // parse_args
 //  arguments:
@@ -35,15 +24,6 @@ char ** parse_args(char * line, char * c){
 
   return array;
 }
-
-int num_args(char ** array){
-  int counter = 0;
-  while (array[counter]){
-    counter++;
-  }
-  return counter;
-}
-
 
 // userid
 //  arguments:
@@ -181,22 +161,18 @@ int pipes(char * line){
   int fds[2];
   pipe(fds);
   char ** sep = parse_args(line, "|");
-  int fd0 = dup(STDIN_FILENO);
-  int fd1 = dup(STDOUT_FILENO);
 
   char ** args0 = parse_args( sep[0], " ");
   char ** args1 = parse_args( sep[1], " ");
-  int n = 0;
 
   pid_t f = fork();
 
-  int x = -1;
-  int y = -1;
-
+  if (f < 0){
+    printf("%s: %s\n", args1[0], strerror(errno));
+  }
   if (f == 0){
     close(fds[0]);
-    // write(fds[1], sep[0], 100);
-    x = dup2(fds[1], STDOUT_FILENO);
+    dup2(fds[1], STDOUT_FILENO);
     int error = execvp(args0[0], args0);
     if (error == -1)
       printf("%s: %s\n", args0[0], strerror(errno));
@@ -204,15 +180,12 @@ int pipes(char * line){
   else{
     int cpid = wait(NULL);
     close(fds[1]);
-    y = dup2(fds[0], STDIN_FILENO);
+    dup2(fds[0], STDIN_FILENO);
     int error = execvp(args1[0], args1);
     if (error == -1)
       printf("%s: %s\n", args1[0], strerror(errno));
-    return 0;
   }
-
-  dup2(fd0, x);
-  dup2(fd1, y);
+  return 0;
 }
 
 int reg(char * line){
@@ -253,47 +226,54 @@ int semi_colon(char * line){
   char ** argsep = parse_args(line, ";");
   int index = 0;
   while(argsep[index]) {
-    // if (strchr(line, '|'))
-    //   pipes(argsep[index]);
-    // else;
       reg(argsep[index]);
     index++;
   }
   return 0;
 }
 
-// run
+void print_prompt(char * uid){
+  printf("\e[92m%s:\e[94m%s\e[92m$ ", uid, getcwd(NULL, 256));
+}
+
+// get_line
+//  arguments:
+//    char * line : string in which to store the input
+//  return value:
+//    void
+//  what it does:
+//    gets the input from the terminal and stores it in a string
+void get_line(char * line){
+  fgets(line, 100, stdin);
+  char * p = strchr(line, '\n');
+  if (p) *p = 0;
+}
+
+// main
 //  arguments:
 //    n/a
 //  return value:
 //    int - returns 0 for successful, -1 for error
 //  what it does:
 //    runs the whole process
-int run(){
-  pid_t parent = getpid();
+int main(){
+  printf("\e[36m--- WELCOME TO CAMILLA'S TERMINAL :3 ---\n");
+  printf("\e[36m---    pls dont break anything <3    ---\n");
+
   char * uid = userid();
-  // printf("\e[36mWELCOME TO CAMILLA'S TERMINAL <3\n");
 
   while(1) {
-    printf("\e[92m%s:\e[94m%s\e[92m$ ", uid, getcwd(NULL, 256));
+    print_prompt(uid);
 
     char * line = calloc(100, sizeof(char));
-    fgets(line, 100, stdin);
-    char * p = strchr(line, '\n');
-    if (p) *p = 0;
+    get_line(line);
 
     if (strchr(line, ';'))
       semi_colon(line);
-    // else if (strchr(line, '|'))
-    //   pipes(line);
     else
       reg(line);
 
     free(line);
   }
   return 0;
-}
-
-int main(){
-  return run();
 }
