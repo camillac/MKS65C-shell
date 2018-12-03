@@ -11,7 +11,7 @@
 * pipes
 
 ## Bugs and Stuff
-
+* can not use ">" and "<" for the same process
 
 ## Functions:
 * **parse_args**
