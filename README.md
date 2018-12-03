@@ -1,21 +1,30 @@
-# CAMILLA'S WONDERFUL SHELL
+# CAMILLA'S WONDERFUL SHELL (better than Joan's)
 ## Features:
 * prompt containing username + path in COLOR
 * runs basic bash commands (ex. ls, ls -al, cat, etc.)
 * allows for extra white space when running processes
-* cd + exit
-   - can "cd ~" or "cd" (<- no file path), will cd to home directory
+* `cd` + `exit`
+   - can `cd ~` or `cd` (<- no file path), will cd to home directory
 * semi-colon process separation
-* redirection using "<" and ">" (works with multiple symbols)
+* redirection using "<" and ">" (works with multiple ">"'s or "<"'s, can not use both at the same time)
 * pipes (only 1 though)
 
-## Failed/In Progress Features:
+## In Progress/Future Features:
+* multiples pipes
+* fix redirection bugs
+* tab completion <3
+* up + down arrow history stuff
+
+## Failed Features:
 * N/A, everything's working! (hopefully)
 
 ## Bugs and Stuff
 * can not use "<" and then ">" in the same line
 * unclear whether or not ">" and "<" (in that order) in the same line works or not
 * can not use redirection and pipes in the same line
+* when redirecting a test file to ./a.out to test the functionality, it runs through all the processes but prints the prompt repeatedly afterwards
+* ex. commands that don't work as they should: `ls > >`, `ls |'
+* maybe more (?)
 
 ## Functions:
 * **parse_args** - `char ** parse_args(char * line, char * c)`
