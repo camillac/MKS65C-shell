@@ -232,11 +232,7 @@ int reg(char * line){
   int newfd = -1;
   // if child
   if (f1 == 0) {
-    if (line[0] == '|' || line[0] == '>'|| line[0] == '<'  || line[0] == ';'){
-      int error = execvp((char*) line[1], args);
-      if (error == -1)
-        printf("%s: %s\n", args[0], strerror(errno));
-    }
+
     if (strchr(line, '|'))
       pipes(line);
     redir_sout(line);
@@ -308,7 +304,10 @@ int main(){
     char * line = calloc(100, sizeof(char));
     get_line(line);
 
-    if (strchr(line, ';'))
+    if (line[0] == '|' || line[0] == '>' || line[0] == '<' || line[0] == ';') {
+      printf("-bash: syntax error near unexpected token `%c'\n", line[0]);
+    }
+    else if (strchr(line, ';'))
       semi_colon(line);
     else
       reg(line);
