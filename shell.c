@@ -36,7 +36,6 @@ char ** parse_args(char * line, char * c){
   return array;
 }
 
-
 int num_args(char ** array){
   int counter = 0;
   while (array[counter]){
@@ -60,16 +59,6 @@ char * userid(){
   char * uid = getpwuid(s->st_uid)->pw_name;
   free(s);
   return uid;
-}
-
-int redir(char * r, char * file){
-  if (strcmp(r, ">"));
-  if (strcmp(r, ">>"));
-  if (strcmp(r, "2>"));
-  if (strcmp(r, "&>"));
-  if (strcmp(r, "<"));
-  else
-    return -1;
 }
 
 // replace_one
@@ -153,74 +142,81 @@ void cd_exit(char ** args){
   }
 }
 
-int reg(char * line){
-  char ** args = parse_args( line, " ");
-  int status;
+int pipes(char * line){
 
-  // if cd or exit
-  cd_exit(args);
-
-  pid_t f1 = fork();
-
-  // if child
-  if (f1 == 0) {
-    execvp(args[0], args);
-    return 0;
-  }
-  // if parent
-  // wait until a child process is done
-  int cpid = wait(&status);
-
-
-  free(args);
-  return 0;
 }
 
 int redir_sin(char * line){
   int x = 1;
   char ** sep = parse_args(line, "<");
-  int sin = dup(STDIN_FILENO);
-  int fd;
+  int fd = STDIN_FILENO;
+  int newfd = -1;
   while (sep[x]){
-    fd = open(trim(sep[x]), O_CREAT | O_RDONLY);
-    int s = dup2(fd, STDIN_FILENO);
-    close(fd);
+    newfd = open(trim(sep[x]), O_CREAT | O_RDONLY);
+    int s = dup2(newfd, fd);
+    if (newfd == -1){
+      printf("error: %s\n", strerror(errno));
+    }
+    close(newfd);
     x++;
   }
-  return sin;
+  return 0;
 }
 
 int redir_sout(char * line){
   int x = 1;
   char ** sep = parse_args(line, ">");
-  int sout = dup(STDOUT_FILENO);
   int fd = STDOUT_FILENO;
-  int newfd;
+  int newfd = -1;
   while (sep[x]){
-    // printf("HELLLLLLLLLLO");
     newfd = open(trim(sep[x]), O_CREAT | O_WRONLY);
     int s = dup2(newfd, fd);
+    if (newfd == -1){
+      printf("error: %s\n", strerror(errno));
+    }
     close(newfd);
     x++;
   }
-  printf("%s\n", sep[0]);
-  reg(sep[0]);
-  dup2(sout, newfd);
-  return sout;
+  return 0;
 }
+
+int reg(char * line){
+  char * copy = calloc(sizeof(char), 100);
+  strcat(copy, line);
+  char ** args = parse_args( copy, " ");
+  if (!strcmp(args[0], "cd") || !strcmp(args[0], "exit")){
+    cd_exit(args);
+    return 0;
+  }
+  printf("%s\n", line);
+
+  pid_t f1 = fork();
+
+  int newfd = -1;
+  // if child
+  if (f1 == 0) {
+    redir_sout(line);
+    redir_sin(line);
+    args = parse_args( line, " ");
+
+    int error = execvp(args[0], args);
+    if (error == -1)
+      printf("%s: %s\n", args[0], strerror(errno));
+    exit(0);
+  }
+  // if parent
+  // wait until a child process is done
+  int cpid = wait(NULL);
+
+  return 0;
+}
+
 
 int semi_colon(char * line){
   char ** argsep = parse_args(line, ";");
   int index = 0;
   while(argsep[index]) {
-      if (strchr(line, '>'))
-        redir_sout(line);
-      // else if (strchr(line, '<'))
-      //   redir_sin(line);
-      // else if (strchr(line, '|'))
-      //   pip(line);
-      else
-        reg(line);
+      reg(line);
       index++;
   }
   return 0;
@@ -248,12 +244,6 @@ int run(){
 
     if (strchr(line, ';'))
       semi_colon(line);
-    else if (strchr(line, '>'))
-      redir_sout(line);
-    // else if (strchr(line, '<'))
-    //   redir_sin(line);
-    // else if (strchr(line, '|'))
-    //   pip(line);
     else
       reg(line);
 
