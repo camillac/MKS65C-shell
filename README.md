@@ -2,16 +2,19 @@
 ## Features:
 * prompt containing username + path in COLOR
 * runs basic bash commands (ex. ls, ls -al, cat, etc.)
+* allows for extra white space when running processes
 * cd + exit
-* can "cd ~" or "cd" (<- no file path), will cd to home directory
+   - can "cd ~" or "cd" (<- no file path), will cd to home directory
 * semi-colon process separation
 * redirection using "<" and ">" (works with multiple symbols)
-* pipes (only 1)
+* pipes (only 1 though)
 
 ## Failed/In Progress Features:
+* n/a, everything's working! (hopefully)
 
 ## Bugs and Stuff
-* can not use ">" and "<" for the same process
+* can not use "<" and then ">" in the same line
+* unclear whether or not ">" and "<" (in that order) in the same line works or not
 * can not use redirection and pipes in the same line
 
 ## Functions:
