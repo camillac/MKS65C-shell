@@ -176,6 +176,45 @@ int redir_sout(char * line){
   return 0;
 }
 
+
+int pipes(char * line){
+  int fds[2];
+  pipe(fds);
+  char ** sep = parse_args(line, "|");
+  int fd0 = dup(STDIN_FILENO);
+  int fd1 = dup(STDOUT_FILENO);
+
+  char ** args0 = parse_args( sep[0], " ");
+  char ** args1 = parse_args( sep[1], " ");
+  int n = 0;
+
+  pid_t f = fork();
+
+  int x = -1;
+  int y = -1;
+
+  if (f == 0){
+    close(fds[0]);
+    // write(fds[1], sep[0], 100);
+    x = dup2(fds[1], STDOUT_FILENO);
+    int error = execvp(args0[0], args0);
+    if (error == -1)
+      printf("%s: %s\n", args0[0], strerror(errno));
+  }
+  else{
+    int cpid = wait(NULL);
+    close(fds[1]);
+    y = dup2(fds[0], STDIN_FILENO);
+    int error = execvp(args1[0], args1);
+    if (error == -1)
+      printf("%s: %s\n", args1[0], strerror(errno));
+    return 0;
+  }
+
+  dup2(fd0, x);
+  dup2(fd1, y);
+}
+
 int reg(char * line){
   char * copy = calloc(sizeof(char), 100);
   strcat(copy, line);
@@ -186,13 +225,13 @@ int reg(char * line){
   }
   free(copy);
 
-  printf("%s\n", line);
-
   pid_t f1 = fork();
 
   int newfd = -1;
   // if child
   if (f1 == 0) {
+    if (strchr(line, '|'))
+      pipes(line);
     redir_sout(line);
     redir_sin(line);
     args = parse_args( line, " ");
@@ -209,65 +248,16 @@ int reg(char * line){
   return 0;
 }
 
-int pipes(char * line){
-  int fds[2];
-  pipe(fds);
-  char ** sep = parse_args(line, "|");
-  int fd0 = dup(STDIN_FILENO);
-  int fd1 = dup(STDOUT_FILENO);
-
-  pid_t f = fork();
-
-  int x = -1;
-  int y = -1;
-
-  char ** args0 = parse_args( sep[0], " ");
-  char ** args1 = parse_args( sep[1], " ");
-  int n = 0;
-  while (args0[n]){
-    printf("IH'%s'\n", args0[n]);
-    n++;
-  }
-  n = 0;
-  while (args1[n]){
-    printf("f'%s'\n", args1[n]);
-    n++;
-  }
-
-  if (f == 0){
-    close(fds[1]);
-    // write(fds[1], sep[0], 100);
-    x = dup2(fds[0], STDIN_FILENO);
-    printf("%s\n", sep[0]);
-    int error = execvp(args0[0], args0);
-    if (error == -1)
-      printf("%s: %s\n", args0[0], strerror(errno));
-    exit(0);
-  }
-  else{
-    int cpid = wait(NULL);
-    close(fds[0]);
-    y = dup2(fds[1], STDOUT_FILENO);
-    printf("%s\n", sep[1]);
-    int error = execvp(args1[0], args1);
-    if (error == -1)
-      printf("%s: %s\n", args1[0], strerror(errno));
-    return 0;
-  }
-
-  // dup2(fd0, x);
-  // dup2(fd1, y);
-}
 
 int semi_colon(char * line){
   char ** argsep = parse_args(line, ";");
   int index = 0;
   while(argsep[index]) {
-    if (strchr(line, '|'))
-      pipes(line);
-    else;
-      reg(line);
-      index++;
+    // if (strchr(line, '|'))
+    //   pipes(argsep[index]);
+    // else;
+      reg(argsep[index]);
+    index++;
   }
   return 0;
 }
@@ -294,8 +284,8 @@ int run(){
 
     if (strchr(line, ';'))
       semi_colon(line);
-    if (strchr(line, '|'))
-      pipes(line);
+    // else if (strchr(line, '|'))
+    //   pipes(line);
     else
       reg(line);
 
