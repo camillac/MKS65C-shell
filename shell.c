@@ -122,16 +122,23 @@ void cd_exit(char ** args){
   }
 }
 
+// redir_sin
+//  arguments:
+//    char * line : line of input
+//  return value:
+//    int - returns 0 for successful, -1 for error
+//  what it does:
+//    redirects for "<" symbol
 int redir_sin(char * line){
   int x = 1;
   char ** sep = parse_args(line, "<");
   int fd = STDIN_FILENO;
   int newfd = -1;
   while (sep[x]){
-    newfd = open(trim(sep[x]), O_CREAT | O_RDONLY);
+    newfd = open(trim(sep[x]), O_RDONLY);
     int s = dup2(newfd, fd);
     if (newfd == -1){
-      printf("error: %s\n", strerror(errno));
+      printf("-bash: %s: %s\n", trim(sep[x]), strerror(errno));
     }
     close(newfd);
     x++;
@@ -139,12 +146,20 @@ int redir_sin(char * line){
   return 0;
 }
 
+// redir_sout
+//  arguments:
+//    char * line : line of input
+//  return value:
+//    int - returns 0 for successful, -1 for error
+//  what it does:
+//    redirects for ">" symbol
 int redir_sout(char * line){
   int x = 1;
   char ** sep = parse_args(line, ">");
   int fd = STDOUT_FILENO;
   int newfd = -1;
   while (sep[x]){
+    redir_sin(sep[x]);
     newfd = open(trim(sep[x]), O_CREAT | O_WRONLY);
     int s = dup2(newfd, fd);
     if (newfd == -1){
@@ -156,7 +171,13 @@ int redir_sout(char * line){
   return 0;
 }
 
-
+// pipes
+//  arguments:
+//    char * line : line of input
+//  return value:
+//    int - returns 0 for successful, -1 for error
+//  what it does:
+//    pipes the stdout of one process to the stdin of another
 int pipes(char * line){
   int fds[2];
   pipe(fds);
@@ -188,6 +209,13 @@ int pipes(char * line){
   return 0;
 }
 
+// reg
+//  arguments:
+//    char * line : line of input
+//  return value:
+//    int - returns 0 for successful, -1 for error
+//  what it does:
+//    runs the individual processes
 int reg(char * line){
   char * copy = calloc(sizeof(char), 100);
   strcat(copy, line);
@@ -221,7 +249,13 @@ int reg(char * line){
   return 0;
 }
 
-
+// semi_colon
+//  arguments:
+//    char * line : line of input
+//  return value:
+//    int - returns 0 for successful, -1 for error
+//  what it does:
+//    separates processes by semicolons
 int semi_colon(char * line){
   char ** argsep = parse_args(line, ";");
   int index = 0;
