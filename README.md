@@ -1,4 +1,4 @@
-# CAMILLA'S WONDERFUL SHELL (better than Joan's)
+# CAMILLA'S WONDERFUL SHELL
 ## Features:
 * prompt containing username + path in COLOR
 * runs basic bash commands (ex. ls, ls -al, cat, etc.)
