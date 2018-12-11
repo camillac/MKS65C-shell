@@ -117,7 +117,7 @@ void cd_exit(char ** args){
     }
   }
   if (!strcmp(args[0], "exit")){
-    printf("logout\n");
+    // printf("logout\n");
     exit(0);
   }
 }
@@ -269,7 +269,7 @@ int semi_colon(char * line){
 }
 
 void print_prompt(char * uid){
-  printf("\e[92m%s:\e[94m%s\e[92m$\e[37m ", uid, getcwd(NULL, 256));
+  printf("\n\e[92m%s:\e[94m%s\e[92m$\e[37m ", uid, getcwd(NULL, 256));
 }
 
 // get_line
@@ -294,12 +294,12 @@ void get_line(char * line){
 //    runs the whole process
 int main(){
   printf("\e[36m--- WELCOME TO CAMILLA'S TERMINAL :3 ---\n");
-  printf("\e[36m---    pls dont break anything <3    ---\n");
+  printf("---    pls dont break anything <3    ---\n");
 
   char * uid = userid();
 
   while(1) {
-    print_prompt(uid);
+    // print_prompt(uid);
 
     char * line = calloc(100, sizeof(char));
     get_line(line);
