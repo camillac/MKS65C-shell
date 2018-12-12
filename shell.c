@@ -269,7 +269,7 @@ int semi_colon(char * line){
 }
 
 void print_prompt(char * uid){
-  printf("\n\e[92m%s:\e[94m%s\e[92m$\e[37m ", uid, getcwd(NULL, 256));
+  printf("\e[92m%s:\e[94m%s\e[92m$\e[37m ", uid, getcwd(NULL, 256));
 }
 
 // get_line
@@ -299,7 +299,7 @@ int main(){
   char * uid = userid();
 
   while(1) {
-    // print_prompt(uid);
+    print_prompt(uid);
 
     char * line = calloc(100, sizeof(char));
     get_line(line);
