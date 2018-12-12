@@ -269,7 +269,9 @@ int semi_colon(char * line){
 }
 
 void print_prompt(char * uid){
-  printf("\e[92m%s:\e[94m%s\e[92m$\e[37m ", uid, getcwd(NULL, 256));
+  if (isatty(STDIN_FILENO)){
+    printf("\e[92m%s:\e[94m%s\e[92m$\e[37m ", uid, getcwd(NULL, 256));
+  }
 }
 
 // get_line
